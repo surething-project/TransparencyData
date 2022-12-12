@@ -1,0 +1,23 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.verifier.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.verifier.contract";
+
+import "google/api/annotations.proto";
+import "loc_claim.proto";
+import "Ledger.proto";
+
+
+/*********+*********
+* Verifier Service *
+********************/
+
+service Verifier {
+  // Receives a Location Claim that can be stored in the log server. Returns a Signed Location Certificate Timestamp (SLCT)
+  rpc StoreNewLC(eu.surething_project.core.SignedLocationClaim) returns (pt.ulisboa.tecnico.transparency.ledger.contract.SLCT) {
+    option (google.api.http) = {
+      post: "/v2/verifier"
+      body: "*"
+    };
+  }
+}

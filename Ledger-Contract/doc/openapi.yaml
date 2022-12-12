@@ -1,0 +1,296 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: LedgerService API
+    version: 0.0.1
+paths:
+    /v2/ledger:
+        get:
+            tags:
+                - LedgerService
+            description: Returns the list of Location Certificates as well as the STH
+            operationId: LedgerService_GetLocationProofs
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/x-protobuf:
+                            schema:
+                                $ref: '#/components/schemas/LogContent'
+        post:
+            tags:
+                - LedgerService
+            description: Stores the Location Certificate and returns a promise that the log server will store the corresponding LP within a fixed interval time
+            operationId: LedgerService_StoreNewLP
+            requestBody:
+                content:
+                    application/x-protobuf:
+                        schema:
+                            $ref: '#/components/schemas/LocationCertificate'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/x-protobuf:
+                            schema:
+                                $ref: '#/components/schemas/SLCT'
+    /v2/ledger/audit-proof:
+        post:
+            tags:
+                - LedgerService
+            description: Gets an Audit Proof
+            operationId: LedgerService_GetAuditProof
+            requestBody:
+                content:
+                    application/x-protobuf:
+                        schema:
+                            $ref: '#/components/schemas/AuditRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/x-protobuf:
+                            schema:
+                                $ref: '#/components/schemas/AuditResult'
+    /v2/ledger/certificate:
+        get:
+            tags:
+                - LedgerService
+            description: Gets the Certificate of the Ledger
+            operationId: LedgerService_GetCertificate
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/x-protobuf:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+    /v2/ledger/consistency-proof:
+        post:
+            tags:
+                - LedgerService
+            description: Gets a ConsistencyProof
+            operationId: LedgerService_GetConsistencyProof
+            requestBody:
+                content:
+                    application/x-protobuf:
+                        schema:
+                            $ref: '#/components/schemas/ConsistencyProofRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/x-protobuf:
+                            schema:
+                                $ref: '#/components/schemas/ConsistencyProofResult'
+components:
+    schemas:
+        Any:
+            type: object
+            properties:
+                typeUrl:
+                    type: string
+                    description: 'A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. The last segment of the URL''s path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading "." is not accepted). In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows: * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.) Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com. Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics.'
+                value:
+                    type: string
+                    description: Must be a valid serialized protocol buffer of the above specified type.
+                    format: bytes
+            description: '`Any` contains an arbitrary serialized protocol buffer message along with a URL that describes the type of the serialized message. Protobuf library provides support to pack/unpack Any values in the form of utility functions or additional generated methods of the Any type. Example 1: Pack and unpack a message in C++.     Foo foo = ...;     Any any;     any.PackFrom(foo);     ...     if (any.UnpackTo(&foo)) {       ...     } Example 2: Pack and unpack a message in Java.     Foo foo = ...;     Any any = Any.pack(foo);     ...     if (any.is(Foo.class)) {       foo = any.unpack(Foo.class);     }  Example 3: Pack and unpack a message in Python.     foo = Foo(...)     any = Any()     any.Pack(foo)     ...     if any.Is(Foo.DESCRIPTOR):       any.Unpack(foo)       ...  Example 4: Pack and unpack a message in Go      foo := &pb.Foo{...}      any, err := ptypes.MarshalAny(foo)      ...      foo := &pb.Foo{}      if err := ptypes.UnmarshalAny(any, foo); err != nil {        ...      } The pack methods provided by protobuf library will by default use ''type.googleapis.com/full.type.name'' as the type URL and the unpack methods only use the fully qualified type name after the last ''/'' in the type URL, for example "foo.bar.com/x/y.z" will yield type name "y.z". JSON ==== The JSON representation of an `Any` value uses the regular representation of the deserialized, embedded message, with an additional field `@type` which contains the type URL. Example:     package google.profile;     message Person {       string first_name = 1;       string last_name = 2;     }     {       "@type": "type.googleapis.com/google.profile.Person",       "firstName": <string>,       "lastName": <string>     } If the embedded message type is well-known and has a custom JSON representation, that representation will be embedded adding a field `value` which holds the custom JSON in addition to the `@type` field. Example (for message [google.protobuf.Duration][]):     {       "@type": "type.googleapis.com/google.protobuf.Duration",       "value": "1.212s"     }'
+        AuditRequest:
+            type: object
+            properties:
+                treeSize:
+                    type: integer
+                    description: The number of LCs stored in the Merkle Hash Tree
+                    format: int64
+                slct:
+                    $ref: '#/components/schemas/SLCT'
+        AuditResult:
+            type: object
+            properties:
+                signedLocationCertificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SignedLocationCertificate'
+                    description: The location certificates that included until the treeSize requested
+                STH:
+                    $ref: '#/components/schemas/SignedTreeHead'
+                auditPath:
+                    type: array
+                    items:
+                        type: string
+                    description: The number of LPs necessary for an audit proof
+                leafIndex:
+                    type: integer
+                    description: The index of the signed LC X in the merkle tree
+                    format: int64
+        Certificate:
+            type: object
+            properties:
+                certificate:
+                    type: string
+                    description: The contents of a certificate
+                    format: bytes
+        ConsistencyProofRequest:
+            type: object
+            properties:
+                sth1:
+                    $ref: '#/components/schemas/SignedTreeHead'
+                sth2:
+                    $ref: '#/components/schemas/SignedTreeHead'
+            description: Represents a request for a consistency proof between 2 Signed Tree Heads
+        ConsistencyProofResult:
+            type: object
+            properties:
+                merkleTreeElements:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SignedLocationCertificate'
+                    description: The list of signed LCs stored in the log until the bigger treeSize
+                consistencyProofHashes:
+                    type: array
+                    items:
+                        type: string
+                    description: The number of signed LCs necessary for a consistency proof
+                STH:
+                    $ref: '#/components/schemas/SignedTreeHead'
+        EpochTime:
+            type: object
+            properties:
+                epochId:
+                    type: string
+                timeValue:
+                    type: integer
+                    format: int64
+                timeUnit:
+                    type: string
+            description: Epoch time
+        LocationCertificate:
+            type: object
+            properties:
+                verification:
+                    $ref: '#/components/schemas/LocationVerification'
+                verifierSignature:
+                    $ref: '#/components/schemas/Signature'
+            description: A location certificate is a verified location claim, optionally supported by endorsements
+        LocationVerification:
+            type: object
+            properties:
+                verifierId:
+                    type: string
+                    description: verifier unique id
+                claimId:
+                    type: string
+                    description: the original location claim of the prover
+                endorsementIds:
+                    type: array
+                    items:
+                        type: string
+                    description: list of location endorsements by witnesses
+                time:
+                    $ref: '#/components/schemas/Time'
+                evidenceType:
+                    type: string
+                    description: type of the evidence
+                evidence:
+                    $ref: '#/components/schemas/Any'
+            description: Location Certificate generated by the verifier for a successful verification of a prover's location claim
+        LogContent:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: The id of the log server that stores several signed location certificates
+                    format: fixed32
+                signedLocationCertificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SignedLocationCertificate'
+                    description: A list of location certificates
+                STH:
+                    $ref: '#/components/schemas/SignedTreeHead'
+        MerkleTreeHead:
+            type: object
+            properties:
+                timestamp:
+                    type: integer
+                    description: TheInputStream is timestamp of the Merkle Hash Tree
+                    format: int64
+                treeSize:
+                    type: integer
+                    description: The number of LPs stored in the Merkle Hash Tree
+                    format: int64
+                merkleTreeRoot:
+                    type: string
+                    description: The root of the Merkle Hash Tree
+        SLCT:
+            type: object
+            properties:
+                logId:
+                    type: integer
+                    description: The id of the log
+                    format: fixed32
+                timestamp:
+                    type: integer
+                    description: The timestamp of the received request
+                    format: int64
+                signedLocationCertificate:
+                    $ref: '#/components/schemas/SignedLocationCertificate'
+            description: A Signed Location Certificate Timestamp
+        Signature:
+            type: object
+            properties:
+                value:
+                    type: string
+                    format: bytes
+                cryptoAlgo:
+                    type: string
+                nonce:
+                    type: integer
+                    format: int64
+            description: signature definition
+        SignedLocationCertificate:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: The id of the signed location certificate Unique id issued by the Ledger once it is submitted for the first time
+                locationCertificate:
+                    $ref: '#/components/schemas/LocationCertificate'
+                signature:
+                    $ref: '#/components/schemas/Signature'
+        SignedTreeHead:
+            type: object
+            properties:
+                mth:
+                    $ref: '#/components/schemas/MerkleTreeHead'
+                signature:
+                    $ref: '#/components/schemas/Signature'
+        Time:
+            type: object
+            properties:
+                timestamp:
+                    type: string
+                    format: RFC3339
+                interval:
+                    $ref: '#/components/schemas/TimeInterval'
+                relativeToEpoch:
+                    $ref: '#/components/schemas/EpochTime'
+            description: Time schemas - alternatives
+        TimeInterval:
+            type: object
+            properties:
+                begin:
+                    type: string
+                    format: RFC3339
+                end:
+                    type: string
+                    format: RFC3339
+            description: Time interval
+tags:
+    - name: LedgerService

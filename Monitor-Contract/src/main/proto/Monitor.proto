@@ -1,0 +1,101 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.monitor.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.monitor.contract";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "loc_time.proto";
+import "MerkleTree.proto";
+import "Ledger.proto";
+
+/***************
+* Definitions *
+***************/
+
+message SignedLCs {
+  // A Signed location certificate
+  repeated pt.ulisboa.tecnico.transparency.ledger.contract.SignedLocationCertificate signedLocationCertificate = 1;
+}
+
+/*****************************************
+* GetLocationProofsByVerifierId Messages *
+******************************************/
+
+message Verifier {
+  option (google.api.resource) = {
+    pattern: "{verifier_id}"
+  };
+
+  string id = 1;
+}
+
+message GetLCsByVerifierIdRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "Verifier"
+  ];
+}
+
+/*******************************************
+* GetLocationProofsByEvidenceType Messages *
+********************************************/
+
+message Evidence {
+  option (google.api.resource) = {
+    pattern: "{evidence_type}"
+  };
+
+  string type = 1;
+}
+
+message GetLCsByEvidenceTypeRequest {
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "Evidence"
+  ];
+}
+
+/************************
+* GetMTHStatus Messages *
+*************************/
+
+message MTHCheck {
+  // Value of the comparison between the MTH received by the log and the one received by the Monitor
+  bool isMTHEqual = 1;
+}
+
+/******************
+* Monitor Service *
+*******************/
+
+service MonitorService {
+  // Get the signed LCs that were sent by the Verifier with this id
+  rpc GetSignedLCsByVerifierId(GetLCsByVerifierIdRequest) returns (SignedLCs) {
+    option (google.api.http) = {
+      get: "/v2/monitor/{verifier_id}"
+    };
+  }
+
+  // Get the signed LCs of a specific type
+  rpc GetSignedLCsByEvidenceType(GetLCsByEvidenceTypeRequest) returns (SignedLCs) {
+    option (google.api.http) = {
+      get: "/v2/monitor/{evidence_type}"
+    };
+  }
+  // Get the Signed LCs that appended in a Time
+  rpc GetSignedLCsByTime(eu.surething_project.core.Time) returns (SignedLCs) {
+    option (google.api.http) = {
+      post: "/v2/monitor/time"
+      body: "*"
+    };
+  }
+
+  rpc GetMTHStatus(pt.ulisboa.tecnico.transparency.contract.SignedTreeHead) returns (MTHCheck) {
+    option (google.api.http) = {
+      post: "/v2/monitor/mth-check"
+      body: "*"
+    };
+  }
+}

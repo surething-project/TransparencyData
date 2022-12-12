@@ -1,0 +1,31 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.auditor.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.auditor.contract";
+
+import "google/api/annotations.proto";
+import "MerkleTree.proto";
+import "Ledger.proto";
+
+
+/******************
+* Auditor Service *
+*******************/
+
+service AuditorService {
+  // Gets an Audit Proof of the Signed Location Certificate Timestamp (SLCT)
+  rpc GetAuditProof(pt.ulisboa.tecnico.transparency.ledger.contract.SLCT) returns (pt.ulisboa.tecnico.transparency.ledger.contract.AuditResult) {
+    option (google.api.http) = {
+      post: "/v2/auditor"
+      body: "*"
+    };
+  }
+
+  // Receives a Signed Tree Head, which is used to produce a Consistency Proof Result
+  rpc GossipSTH(pt.ulisboa.tecnico.transparency.contract.SignedTreeHead) returns (pt.ulisboa.tecnico.transparency.ledger.contract.ConsistencyProofRequest) {
+    option (google.api.http) = {
+      post: "/v2/auditor/gossip"
+      body: "*"
+    };
+  }
+}

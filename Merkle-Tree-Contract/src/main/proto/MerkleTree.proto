@@ -1,0 +1,26 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.contract";
+
+import "signature.proto";
+
+/***************
+* Definitions *
+***************/
+
+message MerkleTreeHead {
+  // TheInputStream is timestamp of the Merkle Hash Tree
+  int64 timestamp = 1;
+  // The number of LPs stored in the Merkle Hash Tree
+  int64 treeSize = 2;
+  // The root of the Merkle Hash Tree
+  string merkleTreeRoot = 3;
+}
+
+message SignedTreeHead {
+  // The Merkle Tree Head (MTH)
+  MerkleTreeHead mth = 1;
+  // The signature of the MTH
+  eu.surething_project.core.Signature signature = 2;
+}

@@ -1,0 +1,145 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.ledger.contract;
+option go_package = "pt.ulisboa.tecnico.transparency.ledger.contract";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "loc_cert.proto";
+import "signature.proto";
+import "MerkleTree.proto";
+
+/***************
+* Definitions *
+***************/
+
+message SignedLocationCertificate {
+  // The id of the signed location certificate
+  // Unique id issued by the Ledger once it is submitted for the first time
+  string id = 1;
+  // The location certificate itself
+  eu.surething_project.core.LocationCertificate locationCertificate = 2;
+  // The signature of the location certificate
+  eu.surething_project.core.Signature signature = 3;
+}
+
+/**********************
+* StoreNewLP Messages *
+***********************/
+// A Signed Location Certificate Timestamp
+message SLCT {
+  // The id of the log
+  fixed32 logId = 1;
+  // The timestamp of the received request
+  int64 timestamp = 2;
+  // A signed location certificate
+  SignedLocationCertificate signedLocationCertificate = 3;
+}
+
+/*****************************
+* GetLocationProofs Messages *
+******************************/
+
+message LogContent {
+  // The id of the log server that stores several signed location certificates
+  fixed32 id = 1;
+  // A list of location certificates
+  repeated SignedLocationCertificate signedLocationCertificates = 2;
+  // The Signed Tree Head of the Merkle Hash Tree
+  pt.ulisboa.tecnico.transparency.contract.SignedTreeHead STH = 3;
+}
+
+/*************************
+* GetAuditProof Messages *
+**************************/
+
+message AuditRequest {
+  // The number of LCs stored in the Merkle Hash Tree
+  int64 treeSize = 1;
+  // SLCT = Signed Location Certificate Timestamp
+  SLCT slct = 2;
+}
+
+message AuditResult {
+  // The location certificates that included until the treeSize requested
+  repeated SignedLocationCertificate signedLocationCertificates = 1;
+  // The STH of the log's contents
+  pt.ulisboa.tecnico.transparency.contract.SignedTreeHead STH = 2;
+  // The number of LPs necessary for an audit proof
+  repeated string auditPath = 3;
+  // The index of the signed LC X in the merkle tree
+  int64 leafIndex = 4;
+}
+
+/*******************************
+* GetConsistencyProof Messages *
+********************************/
+
+//Represents a request for a consistency proof between 2 Signed Tree Heads
+message ConsistencyProofRequest {
+  // The first STH
+  pt.ulisboa.tecnico.transparency.contract.SignedTreeHead sth1 = 1;
+  // The second STH
+  pt.ulisboa.tecnico.transparency.contract.SignedTreeHead sth2 = 2;
+}
+
+message ConsistencyProofResult {
+  // The list of signed LCs stored in the log until the bigger treeSize
+  repeated SignedLocationCertificate merkleTreeElements = 1;
+  // The number of signed LCs necessary for a consistency proof
+  repeated string consistencyProofHashes = 2;
+  // The STH of the Merkle Hash Tree
+  pt.ulisboa.tecnico.transparency.contract.SignedTreeHead STH = 3;
+}
+
+/***************************
+* GetCertificate Messages *
+***************************/
+
+message Certificate {
+  // The contents of a certificate
+  bytes certificate = 1;
+}
+
+/*********+*******
+* Ledger Service *
+******************/
+
+service LedgerService {
+  // Stores the Location Certificate and returns a promise that the log server will store the corresponding LP within a fixed interval time
+  rpc StoreNewLP(eu.surething_project.core.LocationCertificate) returns (SLCT) {
+    option (google.api.http) = {
+      post: "/v2/ledger"
+      body: "*"
+    };
+  }
+
+  // Returns the list of Location Certificates as well as the STH
+  rpc GetLocationProofs(google.protobuf.Empty) returns (LogContent) {
+    option (google.api.http) = {
+      get: "/v2/ledger"
+    };
+  }
+
+  // Gets an Audit Proof
+  rpc GetAuditProof(AuditRequest) returns (AuditResult) {
+    option (google.api.http) = {
+      post: "/v2/ledger/audit-proof"
+      body: "*"
+    };
+  }
+
+  // Gets a ConsistencyProof
+  rpc GetConsistencyProof(ConsistencyProofRequest) returns (ConsistencyProofResult) {
+    option (google.api.http) = {
+      post: "/v2/ledger/consistency-proof"
+      body: "*"
+    };
+  }
+
+  // Gets the Certificate of the Ledger
+  rpc GetCertificate(google.protobuf.Empty) returns (Certificate) {
+    option (google.api.http) = {
+      get: "/v2/ledger/certificate"
+    };
+  }
+}

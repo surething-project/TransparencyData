@@ -1,0 +1,37 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.ca.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.ca.contract";
+
+import "google/api/annotations.proto";
+
+/***************
+* Definitions *
+***************/
+
+message Certificate {
+  //----------------------------
+  // The contents of a certificate
+  bytes certificate = 1;
+}
+
+message CertificateSigningRequest {
+  // The contents of a certificate signing request
+  bytes certificateSigningRequest = 1;
+  // The name of the keeper of the csr
+  string name = 2;
+}
+
+/*************
+* CA Service *
+**************/
+
+service CA {
+  // Gets an Audit Proof of the Signed Location Proof Timestamp (SLPT)
+  rpc GenerateCertificate(CertificateSigningRequest) returns (Certificate) {
+    option (google.api.http) = {
+      post: "/v2/ca"
+      body: "*"
+    };
+  }
+}

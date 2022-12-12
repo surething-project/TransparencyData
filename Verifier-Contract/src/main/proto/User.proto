@@ -1,0 +1,53 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.transparency.verifier.contract;
+
+option go_package = "pt.ulisboa.tecnico.transparency.verifier.contract";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+/***************
+* Definitions *
+***************/
+
+message Credentials {
+  // The id of the user
+  int64 id = 1;
+  // The username of the user
+  string username = 2;
+  // The password of the user
+  string password = 3;
+}
+
+message Authorization {
+  string jwt = 1;
+}
+
+
+/***************
+* User Service *
+****************/
+
+service User {
+  // User Login
+  rpc Login(Credentials) returns (Authorization) {
+    option (google.api.http) = {
+      post: "/v2/user/login"
+      body: "*"
+    };
+  }
+
+  // User Registration
+  rpc Register(Credentials) returns (Authorization) {
+    option (google.api.http) = {
+      post: "/v2/user/register"
+      body: "*"
+    };
+  }
+
+  rpc Refresh(google.protobuf.Empty) returns (Authorization) {
+    option (google.api.http) = {
+      post: "/v2/user/register"
+      body: "*"
+    };
+  }
+}
